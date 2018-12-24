@@ -1,7 +1,17 @@
-export function setSessionLength(session, minute) {
+export function setSessionLength(session, minute, id) {
   return {
     type: 'setSession',
-    session: session,
-    minute: minute
+    setting: {
+      session: session,
+      minute: minute,
+    },
+    taskID: id
+  }
+}
+
+export function addTaskAction(task) {
+  return {
+    type: 'addTask',
+    taskName: task
   }
 }

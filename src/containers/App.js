@@ -2,50 +2,48 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux'
 import '../App.css';
 import Timer from './Timer'
-import Tasks from '../presentation/Tasks'
-import Setting from '../presentation/Setting'
-import { setSessionLength } from '../actions/settingActions'
+import TaskForm from '../presentation/TaskForm'
+import Target from './Target'
+import TaskList from '../presentation/TaskList'
+import Task from '../presentation/Task'
 
 class App extends Component {
-
-  //converts minute number to string
-  convertDigit = (digit) => {
-    if(digit < 10) {
-      return `0${digit}`
-    } else {
-      return digit.toString()
+  constructor() {
+    super();
+    this.state = {
+      modal: false,
+      task: {}
     }
   }
 
-  changeMinute = (e) => {
-    let sessionInfo = e.target.id.split('-');
-    let session = sessionInfo[0]
-    let op = sessionInfo[1]
-    let lengths = this.props.sessionLength
-    let minute;
-    if(op === 'plus') {
-      minute = parseInt(lengths[session]) + 1
-    } else {
-      minute = parseInt(lengths[session]) - 1
-    }
-    this.props.setSessionLength(session, this.convertDigit(minute))
+  showTask = (e) => {
+    e.preventDefault();
+    let task;
+    task = this.props.tasks.filter(task => task.id === e.target.id)[0]
+    //set state's task to be current task that's open (from store)
+    this.setState({
+      modal: true,
+      task: task
+    })
+  }
+
+  toggleModal = () => {
+    this.setState({
+      modal: false
+    })
   }
 
   render() {
-    const focusLength = this.props.sessionLength.focus
-    const breakLength = this.props.sessionLength.break
     return (
       <div className="App">
-        <Setting
-          changeMinute={this.changeMinute}
-          session="focus" length={focusLength}
+        <TaskForm save={this.props.saveTask}/>
+        <TaskList tasks={this.props.tasks}
+        showTask={this.showTask}/>
+        <Task task={this.state.task}
+        isOpen={this.state.modal}
+        toggle={this.toggleModal}
+        completed={this.state.task.completed}
         />
-        <Setting
-          changeMinute={this.changeMinute}
-          session="break" length={breakLength}
-        />
-        <Timer convertDigit={this.convertDigit}/>
-        <Tasks />
       </div>
     );
   }
@@ -54,14 +52,19 @@ class App extends Component {
 const mapStateToProps = (state) => {
   return {
     sessionLength: state.sessionLength,
-    target: state.target
+    target: state.target,
+    tasks: state.tasks
   }
 }
 
 const mapDispatchToProps = (dispatch) => {
   return {
-    setSessionLength: (session, minute) => dispatch(
-      setSessionLength(session, minute))
+    startTimer: (type) => dispatch({type: type}),
+    saveTask: (name, id) => dispatch({
+      type: 'addTask',
+      taskName: name,
+      taskID: id
+    })
   }
 }
 

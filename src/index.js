@@ -5,6 +5,7 @@ import App from './containers/App';
 import * as serviceWorker from './serviceWorker';
 import { Provider } from 'react-redux'
 import { createStore } from 'redux'
+import 'bootstrap/dist/css/bootstrap.min.css';
 import pomoReducer from './reducers/reducer'
 
 const store = createStore(pomoReducer);
