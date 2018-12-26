@@ -15,26 +15,27 @@ class Timer extends Component {
       sessionLength: {
         focus: '25',
         break: '00'
-      }
+      },
+      currentSession: 1,
+      taskComplete: false,
+      showAlert: ""
     }
   }
 
+  //this function is to make sure the component re-renders everytime info changes
   connectStateToProp = () => {
+    const task = this.props.task
+    //set state to have same info of the task from the store
+    //set starting minutes to be task's focus session length
     this.setState({
       sessionLength: {
-        focus: this.props.sessionLength.focus,
-        break: this.props.sessionLength.break
-      }
+        focus: task.sessionLength.focus,
+        break: task.sessionLength.break
+      },
+      minutes: task.sessionLength.focus,
+      taskComplete: task.complete,
+      taskID: task.id
     })
-    if(this.state.focus) {
-      this.setState({
-        minutes: this.props.sessionLength.focus
-      })
-    } else {
-      this.setState({
-        minutes: this.props.sessionLength.break
-      })
-    }
   }
 
   componentDidMount() {
@@ -71,34 +72,56 @@ class Timer extends Component {
           minutes: this.convertDigit(minute)
         })
       } else {
-        //session complete
+        //if time ran out, session is complete
         //if current session is focus session, update completed focus sessions in store
-        if(this.state.focus) {this.props.finishSession(this.props.taskID)}
-        //if timer ran out, stop timer, and switch between focus/rest session
-        clearInterval(this.state.nInterval)
-        this.setState({
-          focus: !this.state.focus,
-          minutes: this.state.focus ? this.props.sessionLength.break : this.props.sessionLength.focus,
-          seconds: '00'
-        })
-        //start a new timer
-        this.startTimer();
+        if(this.state.focus) {
+          this.finishSession(this.props.taskID)
+        } else {
+          //if timer ran out but session is not complete
+          //stop timer, and switch between focus/rest session
+          clearInterval(this.state.nInterval)
+          this.setState({
+            focus: !this.state.focus,
+            minutes: this.state.focus ? this.props.sessionLength.break : this.props.sessionLength.focus,
+            seconds: '00'
+          })
+          //start a new timer
+          this.startTimer();
+        }
       }
     } else {
       this.resetTimer();
     }
   }
 
+  //when a focus session is finished
+  //called in timer callback function
+  finishSession = () => {
+    if(this.state.currentSession === this.props.target) {
+      this.setState({
+        taskComplete: true
+      })
+      this.props.completeTask(this.state.taskID)
+      clearInterval(this.state.nInterval)
+    } else {
+      this.setState({
+        currentSession: this.state.currentSession + 1
+      })
+    }
+  }
+
   //when start timer button is clicked
   //change store to indicate timer is now running
   startTimer = () => {
-    this.props.startTimer('startTimer');
-    let nInterval;
-    nInterval = window.setInterval(this.timerCallback, 1000)
-    //save nInterval to state for later's clearInterval
-    this.setState({
-      nInterval: nInterval
-    })
+    if(!this.state.taskComplete) {
+      this.props.startTimer('startTimer');
+      let nInterval;
+      nInterval = window.setInterval(this.timerCallback, 1000)
+      //save nInterval to state for later's clearInterval
+      this.setState({
+        nInterval: nInterval
+      })
+    }
   }
 
   pauseTimer = () => {
@@ -143,14 +166,14 @@ class Timer extends Component {
         minutes: minute,
         sessionLength: {
           ...this.state.sessionLength,
-          focus: minute
+          focus: this.convertDigit(minute)
         }
       })} else {
         this.setState({
           minutes: this.state.sessionLength.focus,
           sessionLength: {
             ...this.state.sessionLength,
-            break: minute
+            break: this.convertDigit(minute)
           }
         })
       }
@@ -200,8 +223,8 @@ const mapDispatchToProps = (dispatch) => {
     setSessionLength: (session, minute, taskID) => dispatch(
       setSessionLength(session, minute, taskID)),
     startTimer: (type) => dispatch({type: type}),
-    finishSession: (taskID) => dispatch({
-      type: 'finishSession',
+    completeTask: (taskID) => dispatch({
+      type: 'completeTask',
       taskID: taskID
     })
   }

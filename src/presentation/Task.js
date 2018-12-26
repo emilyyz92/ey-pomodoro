@@ -11,8 +11,9 @@ const Task = ({task, isOpen, toggle, completed}) => (
       {completed ? <Alert color="success">Task Complete!</Alert> : null}
       <Target taskID={task.id} target={task.target}/>
       <Timer taskID={task.id}
-      sessionLength={task.sessionLength}
-      taskComplete={task.complete}
+        sessionLength={task.sessionLength}
+        task={task}
+        target={task.target}
       />
     </ModalBody>
     <ModalFooter>

@@ -33,6 +33,17 @@ class App extends Component {
     })
   }
 
+  taskComplete = () => {
+    const task = this.props.tasks.filter(
+      task => task.id === this.state.task.id
+    )
+    if(task.length > 0 && task[0].completed) {
+      return true
+    } else {
+      return false
+    }
+  }
+
   render() {
     return (
       <div className="App">
@@ -42,7 +53,7 @@ class App extends Component {
         <Task task={this.state.task}
         isOpen={this.state.modal}
         toggle={this.toggleModal}
-        completed={this.state.task.completed}
+        completed={this.taskComplete()}
         />
       </div>
     );
@@ -51,8 +62,6 @@ class App extends Component {
 
 const mapStateToProps = (state) => {
   return {
-    sessionLength: state.sessionLength,
-    target: state.target,
     tasks: state.tasks
   }
 }

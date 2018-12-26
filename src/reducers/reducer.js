@@ -27,8 +27,6 @@ function taskReducer(state = [], action) {
           id: action.taskID,
           name: action.taskName,
           target: 1,
-          currentTarget: 1,
-          targetYetToComplete: 0,
           completed: false,
           sessionLength: defaultSetting
         }
@@ -59,25 +57,13 @@ function taskReducer(state = [], action) {
           }
         })
       ]
-    case 'finishSession':
+    case 'completeTask':
       task = state.filter(task => task.id === action.taskID)[0]
       newState = state.filter(task => task.id !== action.taskID)
-      if(task.targetYetToComplete > 0) {
-        return [
-          ...newState,
-          Object.assign({}, task, {
-            currentTarget: task.currentTarget + 1,
-            targetYetToComplete: task.targetYetToComplete - 1
-          })
-        ]
-      } else {
-        return [
-          ...newState,
-          Object.assign({}, task, {
-            completed: true
-          })
-        ]
-      }
+      return [
+        ...newState,
+        Object.assign({}, task, {completed: true})
+      ]
     default:
       return state;
   }
