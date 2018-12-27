@@ -28,6 +28,7 @@ class Target extends Component {
     this.setState({
       target: target
     })
+    this.props.changeTarget(target)
   }
 
   render() {

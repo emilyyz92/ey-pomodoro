@@ -2,7 +2,8 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux'
 import Setting from '../presentation/Setting'
 import { setSessionLength } from '../actions/settingActions'
-
+import {Alert} from 'reactstrap'
+import sound from '../bell.mp3'
 
 class Timer extends Component {
   constructor() {
@@ -18,8 +19,9 @@ class Timer extends Component {
       },
       currentSession: 1,
       taskComplete: false,
-      showAlert: ""
+      alert: ""
     }
+    this.audio = React.createRef();
   }
 
   //this function is to make sure the component re-renders everytime info changes
@@ -73,40 +75,51 @@ class Timer extends Component {
         })
       } else {
         //if time ran out, session is complete
-        //if current session is focus session, update completed focus sessions in store
         if(this.state.focus) {
-          this.finishSession(this.props.taskID)
+          this.finishSession()
         } else {
           //if timer ran out but session is not complete
           //stop timer, and switch between focus/rest session
-          clearInterval(this.state.nInterval)
-          this.setState({
-            focus: !this.state.focus,
-            minutes: this.state.focus ? this.props.sessionLength.break : this.props.sessionLength.focus,
-            seconds: '00'
-          })
-          //start a new timer
-          this.startTimer();
+          this.switchSession();
         }
       }
+    // end of timer ran out else statement
     } else {
       this.resetTimer();
     }
   }
 
+  //switch between focus and break sessions after session finished
+  switchSession = () => {
+    clearInterval(this.state.nInterval)
+    this.setState({
+      focus: !this.state.focus,
+      minutes: this.state.focus ? this.state.sessionLength.break : this.state.sessionLength.focus,
+      seconds: '00'
+    })
+    //play session complete sound and restart timer
+    this.playAudio();
+    this.startTimer();
+  }
+
   //when a focus session is finished
   //called in timer callback function
   finishSession = () => {
-    if(this.state.currentSession === this.props.target) {
+    clearInterval(this.state.nInterval)
+    const current = this.state.currentSession
+    //check if task is complete
+    if(current === this.props.target) {
       this.setState({
         taskComplete: true
       })
+      //if complete, update completed focus sessions in store
       this.props.completeTask(this.state.taskID)
-      clearInterval(this.state.nInterval)
     } else {
+      //if task not complete, switch to break session
       this.setState({
-        currentSession: this.state.currentSession + 1
+        currentSession: current + 1
       })
+      this.switchSession()
     }
   }
 
@@ -140,6 +153,11 @@ class Timer extends Component {
     this.props.startTimer('stopTimer')
   }
 
+  playAudio = () => {
+    const audio = this.audio.current;
+    audio.play()
+  }
+
   //when setting changes, stop timer (change store)
   //and change the starting point of timer to the new setting
   changeSetting = (e) => {
@@ -149,34 +167,39 @@ class Timer extends Component {
     let op = sessionInfo[1]
     let lengths = this.state.sessionLength
     let minute;
-    if(op === 'plus') {
-      minute = parseInt(lengths[session]) + 1
-    } else {
-      if(parseInt(lengths[session]) !== 0) {
-        minute = parseInt(lengths[session]) - 1
+    if(!(lengths[session] === '01' && op === 'minus')) {
+      //change session length from clicked button
+      if(op === 'plus') {
+        minute = parseInt(lengths[session]) + 1
       } else {
-        minute = parseInt(lengths[session])
+        minute = parseInt(lengths[session]) - 1
       }
-    }
-    this.props.setSessionLength(session, this.convertDigit(minute), this.props.taskID)
-    this.props.startTimer('stopTimer')
-    this.resetTimer();
-    if(session === 'focus') {
-      this.setState({
-        minutes: minute,
-        sessionLength: {
-          ...this.state.sessionLength,
-          focus: this.convertDigit(minute)
-        }
-      })} else {
+      //save session length in store and stop current timer
+      this.props.setSessionLength(session, this.convertDigit(minute), this.props.taskID)
+      this.props.startTimer('stopTimer')
+      this.resetTimer();
+      //set new session length in state so setting and timer is re-rendered right away
+      if(session === 'focus') {
         this.setState({
-          minutes: this.state.sessionLength.focus,
+          minutes: minute,
           sessionLength: {
             ...this.state.sessionLength,
-            break: this.convertDigit(minute)
+            focus: this.convertDigit(minute)
           }
-        })
-      }
+        })} else {
+          this.setState({
+            minutes: this.state.sessionLength.focus,
+            sessionLength: {
+              ...this.state.sessionLength,
+              break: this.convertDigit(minute)
+            }
+          })
+        }
+    } else {
+      this.setState({
+        alert: "Session length can't be shorter than 1 minute"
+      })
+    }
   }
 
   render() {
@@ -189,7 +212,8 @@ class Timer extends Component {
     const focusLength = this.state.sessionLength.focus
     const breakLength = this.state.sessionLength.break
     return (
-      <div className="tomato-container">
+      <>
+        {this.state.alert !== "" ? <Alert color="warning">{this.state.alert}</Alert> : null}
         <Setting
           changeSetting={this.changeSetting}
           session="focus" length={focusLength}
@@ -203,18 +227,24 @@ class Timer extends Component {
           <p className="timerCountdown">
             {this.state.minutes}:{this.state.seconds}
           </p>
-          <button onClick={this.startTimer}>Start</button>
-          <button onClick={this.pauseTimer}>Pause</button>
-          <button onClick={this.resetTimer}>Reset</button>
+          <div className="control-button">
+            <button onClick={this.startTimer}>Start</button>
+            <button onClick={this.pauseTimer}>Pause</button>
+            <button onClick={this.resetTimer}>Reset</button>
+          </div>
+          <audio ref={this.audio}>
+            <source src={sound} type="audio/mpeg" />
+          </audio>
         </div>
-      </div>
+      </>
     )
   }
 }
 
 const mapStateToProps = (state) => {
   return {
-    timerRunning: state.timerRunning
+    timerRunning: state.timerRunning,
+    tasks: state.tasks
   }
 }
 

@@ -4,16 +4,19 @@ import Timer from '../containers/Timer';
 import Target from '../containers/Target';
 
 
-const Task = ({task, isOpen, toggle, completed}) => (
-  <Modal isOpen={isOpen} >
-    <ModalHeader>{task.name}</ModalHeader>
-    <ModalBody>
+const Task = ({task, isOpen, toggle, completed, changeTarget, target}) => (
+  <Modal isOpen={isOpen}>
+    <ModalHeader>
+      {task.name}
       {completed ? <Alert color="success">Task Complete!</Alert> : null}
-      <Target taskID={task.id} target={task.target}/>
+    </ModalHeader>
+    <ModalBody>
+      <Target taskID={task.id} target={task.target}
+      changeTarget={changeTarget}/>
       <Timer taskID={task.id}
         sessionLength={task.sessionLength}
         task={task}
-        target={task.target}
+        target={target}
       />
     </ModalBody>
     <ModalFooter>

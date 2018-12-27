@@ -64,6 +64,10 @@ function taskReducer(state = [], action) {
         ...newState,
         Object.assign({}, task, {completed: true})
       ]
+    case 'deleteTask':
+      task = state.filter(task => task.id === action.taskID)[0]
+      newState = state.filter(task => task.id !== action.taskID)
+      return newState;
     default:
       return state;
   }
