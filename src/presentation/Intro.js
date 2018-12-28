@@ -1,7 +1,7 @@
 import React from 'react';
 
 const Intro = () => (
-  <div className="pomo-intro">
+  <div className="jumbotron">
     <p>
       This app is built on the concept of the <a href="https://en.wikipedia.org/wiki/Pomodoro_Technique">Pomodoro technique.</a>
     </p>
