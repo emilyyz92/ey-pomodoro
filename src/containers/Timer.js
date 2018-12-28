@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux'
 import Setting from '../presentation/Setting'
-import { setSessionLength } from '../actions/settingActions'
+import { setSessionLength, savePause } from '../actions/settingActions'
 import {Alert} from 'reactstrap'
 import sound from '../bell.mp3'
 
@@ -38,6 +38,14 @@ class Timer extends Component {
       taskComplete: task.complete,
       taskID: task.id
     })
+    if(this.props.task.pausedSession) {
+      const pausedSession = this.props.task.pausedSession;
+      this.setState({
+        minutes: pausedSession.minutes,
+        seconds: pausedSession.seconds,
+        focus: pausedSession.focus
+      })
+    }
   }
 
   componentDidMount() {
@@ -127,19 +135,28 @@ class Timer extends Component {
   //change store to indicate timer is now running
   startTimer = () => {
     if(!this.state.taskComplete) {
+      //reset prev. pause session in store
+      this.props.clearPause(this.props.task.id)
       this.props.startTimer('startTimer');
       let nInterval;
       nInterval = window.setInterval(this.timerCallback, 1000)
-      //save nInterval to state for later's clearInterval
+      //save nInterval to state to clear interval later
       this.setState({
         nInterval: nInterval
       })
     }
   }
 
+  //save paused timer session to store
   pauseTimer = () => {
     clearInterval(this.state.nInterval)
     this.props.startTimer('stopTimer');
+    const session = {
+      focus: this.state.focus,
+      minutes: this.state.minutes,
+      seconds: this.state.seconds
+    }
+    this.props.savePause(session, this.props.task.id)
   }
 
   resetTimer = () => {
@@ -151,6 +168,8 @@ class Timer extends Component {
       focus: true
     })
     this.props.startTimer('stopTimer')
+    //reset prev. pause session in store
+    this.props.clearPause(this.props.task.id)
   }
 
   playAudio = () => {
@@ -256,7 +275,9 @@ const mapDispatchToProps = (dispatch) => {
     completeTask: (taskID) => dispatch({
       type: 'completeTask',
       taskID: taskID
-    })
+    }),
+    savePause: (session, taskID) => dispatch(savePause(session, taskID)),
+    clearPause: (taskID) => dispatch({type: 'clearPausedSession', taskID: taskID})
   }
 }
 

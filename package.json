@@ -1,7 +1,7 @@
 {
   "name": "ey-pomodoro",
   "version": "0.1.0",
-  "homepage": "http://emilyyz92.github.io/pomodoro",
+  "homepage": "http://emilyyz92.github.io/ey-pomodoro/",
   "private": true,
   "dependencies": {
     "bootstrap": "^4.1.3",

@@ -15,3 +15,11 @@ export function addTaskAction(task) {
     taskName: task
   }
 }
+
+export function savePause(session, taskID) {
+  return {
+    type: 'savePausedTime',
+    taskID: taskID,
+    session: session
+  }
+}

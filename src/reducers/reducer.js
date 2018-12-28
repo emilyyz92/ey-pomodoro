@@ -28,7 +28,8 @@ function taskReducer(state = [], action) {
           name: action.taskName,
           target: 1,
           completed: false,
-          sessionLength: defaultSetting
+          sessionLength: defaultSetting,
+          pausedSession: false
         }
       ]
     //set goal number of sessions
@@ -56,6 +57,26 @@ function taskReducer(state = [], action) {
             [action.setting.session]: action.setting.minute
           }
         })
+      ]
+    case 'savePausedTime':
+      task = state.filter(task => task.id === action.taskID)[0]
+      newState = state.filter(task => task.id !== action.taskID)
+      return [
+        ...newState,
+        Object.assign({}, task, {
+          pausedSession: {
+            focus: action.session.focus,
+            minutes: action.session.minutes,
+            seconds: action.session.seconds
+          }
+        })
+      ]
+    case 'clearPausedSession':
+      task = state.filter(task => task.id === action.taskID)[0]
+      newState = state.filter(task => task.id !== action.taskID)
+      return [
+        ...newState,
+        Object.assign({}, task, {pausedSession: false})
       ]
     case 'completeTask':
       task = state.filter(task => task.id === action.taskID)[0]
