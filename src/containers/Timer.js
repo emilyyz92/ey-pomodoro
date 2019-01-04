@@ -121,7 +121,7 @@ class Timer extends Component {
       this.props.completeTask(this.props.currentTask.id)
       //if next task exists, start next task
       const nextTask = this.props.nextTask
-      if(nextTask) {
+      if(nextTask && !nextTask.completed) {
         this.startNextTask(nextTask)
       }
     } else {

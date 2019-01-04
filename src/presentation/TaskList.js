@@ -10,7 +10,6 @@ const drag = (e) => {
 
 const TaskList = ({tasks, showTask, taskTime, deleteTask, dropList}) => (
   <>
-    <h4>Your tasks</h4>
     <div className="list-group" id="tasks-list">
       {tasks.map(task => {
         return (
