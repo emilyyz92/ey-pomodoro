@@ -15,7 +15,7 @@ class Timer extends Component {
       focus: true,
       sessionLength: {
         focus: '25',
-        break: '00'
+        break: '05'
       },
       currentSession: 1,
       taskComplete: false,
@@ -26,25 +26,22 @@ class Timer extends Component {
 
   //this function is to make sure the component re-renders everytime info changes
   connectStateToProp = () => {
-    const task = this.props.task
+    const task = this.props.currentTask
     //set state to have same info of the task from the store
     //set starting minutes to be task's focus session length
-    this.setState({
-      sessionLength: {
-        focus: task.sessionLength.focus,
-        break: task.sessionLength.break
-      },
-      minutes: task.sessionLength.focus,
-      taskComplete: task.complete,
-      taskID: task.id
-    })
-    if(this.props.task.pausedSession) {
-      const pausedSession = this.props.task.pausedSession;
+    if(task) {
       this.setState({
-        minutes: pausedSession.minutes,
-        seconds: pausedSession.seconds,
-        focus: pausedSession.focus
+        taskID: task.id
       })
+      // if there is a paused session from the task, set state to paused session
+      if(this.props.currentTask.pausedSession) {
+        const pausedSession = this.props.currentTask.pausedSession;
+        this.setState({
+          minutes: pausedSession.minutes,
+          seconds: pausedSession.seconds,
+          focus: pausedSession.focus
+        })
+      }
     }
   }
 
@@ -83,6 +80,7 @@ class Timer extends Component {
         })
       } else {
         //if time ran out, session is complete
+        this.playAudio()
         if(this.state.focus) {
           this.finishSession()
         } else {
@@ -106,7 +104,6 @@ class Timer extends Component {
       seconds: '00'
     })
     //play session complete sound and restart timer
-    this.playAudio();
     this.startTimer();
   }
 
@@ -121,7 +118,12 @@ class Timer extends Component {
         taskComplete: true
       })
       //if complete, update completed focus sessions in store
-      this.props.completeTask(this.state.taskID)
+      this.props.completeTask(this.props.currentTask.id)
+      //if next task exists, start next task
+      const nextTask = this.props.nextTask
+      if(nextTask) {
+        this.startNextTask(nextTask)
+      }
     } else {
       //if task not complete, switch to break session
       this.setState({
@@ -131,12 +133,23 @@ class Timer extends Component {
     }
   }
 
+  startNextTask = (nextTask) => {
+    this.setState({
+      minutes: this.state.sessionLength.focus,
+      taskComplete: false,
+      seconds: '00'
+    })
+    this.startTimer()
+  }
+
   //when start timer button is clicked
   //change store to indicate timer is now running
   startTimer = () => {
     if(!this.state.taskComplete) {
       //reset prev. pause session in store
-      this.props.clearPause(this.props.task.id)
+      if(this.props.currentTask) {
+        this.props.clearPause(this.props.currentTask.id)
+      }
       this.props.startTimer('startTimer');
       let nInterval;
       nInterval = window.setInterval(this.timerCallback, 1000)
@@ -156,20 +169,23 @@ class Timer extends Component {
       minutes: this.state.minutes,
       seconds: this.state.seconds
     }
-    this.props.savePause(session, this.props.task.id)
+    if(this.props.currentTask) {
+      this.props.savePause(session, this.props.currentTask.id)
+    }
   }
 
   resetTimer = () => {
     clearInterval(this.state.nInterval)
     this.setState({
       seconds: '00',
-      minutes: this.props.sessionLength.focus,
+      minutes: this.state.sessionLength.focus,
       nInterval: 0,
       focus: true
     })
     this.props.startTimer('stopTimer')
     //reset prev. pause session in store
-    this.props.clearPause(this.props.task.id)
+    this.props.tasks.forEach(
+      (task) => this.props.clearPause(task.id))
   }
 
   playAudio = () => {
@@ -194,7 +210,7 @@ class Timer extends Component {
         minute = parseInt(lengths[session]) - 1
       }
       //save session length in store and stop current timer
-      this.props.setSessionLength(session, this.convertDigit(minute), this.props.taskID)
+      this.props.setSessionLength(session, this.convertDigit(minute))
       this.props.startTimer('stopTimer')
       this.resetTimer();
       //set new session length in state so setting and timer is re-rendered right away
@@ -231,7 +247,7 @@ class Timer extends Component {
     const focusLength = this.state.sessionLength.focus
     const breakLength = this.state.sessionLength.break
     return (
-      <>
+      <div className="timer-container">
         {this.state.alert !== "" ? <Alert color="warning">{this.state.alert}</Alert> : null}
         <Setting
           changeSetting={this.changeSetting}
@@ -255,7 +271,7 @@ class Timer extends Component {
             <source src={sound} type="audio/mpeg" />
           </audio>
         </div>
-      </>
+      </div>
     )
   }
 }
@@ -263,14 +279,15 @@ class Timer extends Component {
 const mapStateToProps = (state) => {
   return {
     timerRunning: state.timerRunning,
-    tasks: state.tasks
+    tasks: state.tasks,
+    sessionLength: state.sessionLength
   }
 }
 
 const mapDispatchToProps = (dispatch) => {
   return {
-    setSessionLength: (session, minute, taskID) => dispatch(
-      setSessionLength(session, minute, taskID)),
+    setSessionLength: (session, minute) => dispatch(
+      setSessionLength(session, minute)),
     startTimer: (type) => dispatch({type: type}),
     completeTask: (taskID) => dispatch({
       type: 'completeTask',

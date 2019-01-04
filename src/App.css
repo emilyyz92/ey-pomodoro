@@ -20,40 +20,60 @@
   color: #61dafb;
 }
 
-.pomo-intro {
-  width: 80%;
-}
-
-.modal-body {
-  display: grid;
-  grid-template-columns: 30% 70%;
-  grid-template-rows: 34% 33% 33%;
-  grid-template-areas: "setting1 timer"
-                       "setting2 timer"
-                       "setting3 timer"
+.jumbotron {
+  font-size: 0.8em;
+  padding: 1em;
 }
 
 .modal-body * {
   margin:auto;
 }
 
-.modal-body:first-child {
+.task-timer-container {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  width: 100%;
+  height: 500px
+}
+
+.task-body, .timer-container {
+  width: 50%;
+  margin: 2em;
+  overflow: scroll;
+}
+
+.timer-container {
+  display: grid;
+  grid-template-columns: 35% 65%;
+  grid-template-rows: 50% 50%;
+  grid-template-areas: "setting1 clock"
+                       "setting2 clock";
+  background-color: #ffcccc;
+}
+
+.timer-container:first-child {
   grid-area: setting1;
 }
 
-.modal-body:nth-child(2) {
+.timer-container:nth-child(2) {
   grid-area: setting2;
 }
 
-.modal-body:nth-child(3) {
-  grid-area: setting3;
+.timer-container .setting-container {
+  align-self: end;
+  justify-self: end;
 }
 
-.modal-body .timer {
-  grid-area: timer;
+.timer-container .setting-container:nth-of-type(2) {
+  align-self: start;
+}
+
+.timer {
   margin:auto;
   padding: 8px;
   background-color: #ffcccc;
+  grid-area: clock;
 }
 
 .timer p {
@@ -67,6 +87,10 @@
 
 .setting-container p {
   font-size: 1em;
+}
+
+.setting-container {
+  margin-bottom: 1em;
 }
 
 .control-button button {

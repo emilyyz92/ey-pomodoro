@@ -16,6 +16,18 @@ function stopTimerReducer(state = false, action) {
   }
 }
 
+function sessionReducer(state = defaultSetting, action) {
+  switch (action.type) {
+    case 'setSession':
+      return {
+        ...state,
+        [action.setting.session]: action.setting.minute
+      }
+    default:
+      return state
+  }
+}
+
 function taskReducer(state = [], action) {
   let task;
   let newState;
@@ -26,10 +38,11 @@ function taskReducer(state = [], action) {
         {
           id: action.taskID,
           name: action.taskName,
+          timeCreated: action.created,
           target: 1,
           completed: false,
-          sessionLength: defaultSetting,
-          pausedSession: false
+          pausedSession: false,
+          priority: 0
         }
       ]
     //set goal number of sessions
@@ -45,19 +58,16 @@ function taskReducer(state = [], action) {
           }
         )
       ];
-    //set length of each session
-    case 'setSession':
+    case 'setPriority':
       task = state.filter(task => task.id === action.taskID)[0]
       newState = state.filter(task => task.id !== action.taskID)
       return [
         ...newState,
         Object.assign({}, task, {
-          sessionLength: {
-            ...task.sessionLength,
-            [action.setting.session]: action.setting.minute
-          }
+          priority: action.priority
         })
       ]
+    //set length of each session
     case 'savePausedTime':
       task = state.filter(task => task.id === action.taskID)[0]
       newState = state.filter(task => task.id !== action.taskID)
@@ -97,6 +107,7 @@ function taskReducer(state = [], action) {
 const pomoReducer = combineReducers({
   timerRunning: stopTimerReducer,
   tasks: taskReducer,
+  sessionLength: sessionReducer
 })
 
 export default pomoReducer;
