@@ -26,6 +26,7 @@
   padding: 1em !important;
   height: 10%;
   background-color: #ccfff2 !important;
+  margin-bottom: auto !important;
 }
 
 .jumbotron .hint {
@@ -158,14 +159,21 @@
 }
 
 @media (max-width: 580px) {
-  .setting-container {
-    display: flex;
-    flex-direction: column;
-    flex-basis: content;
-  }
 
   .timerCountdown {
     font-size: 2em;
+  }
+
+  .task-timer-container {
+    display: flex;
+    flex-direction: column-reverse;
+    height: auto;
+  }
+
+  .timer, .task-body {
+    height: auto;
+    overflow: auto;
+    flex-shrink: 1;
   }
 }
 
