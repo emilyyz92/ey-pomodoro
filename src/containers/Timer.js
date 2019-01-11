@@ -145,7 +145,9 @@ class Timer extends Component {
   //when start timer button is clicked
   //change store to indicate timer is now running
   startTimer = () => {
-    if(!this.state.taskComplete) {
+    if(this.props.tasks.length === 0) {
+      alert("Sorry, you must add task first")
+    } else if (!this.state.taskComplete) {
       //reset prev. pause session in store
       if(this.props.currentTask) {
         this.props.clearPause(this.props.currentTask.id)
