@@ -5,6 +5,11 @@ const defaultSetting = {
   break: '05'
 }
 
+const initialTime = {
+  minutes: '25',
+  seconds: '00'
+}
+
 function stopTimerReducer(state = false, action) {
   switch (action.type) {
     case 'stopTimer':
@@ -23,6 +28,15 @@ function sessionReducer(state = defaultSetting, action) {
         ...state,
         [action.setting.session]: action.setting.minute
       }
+    default:
+      return state
+  }
+}
+
+function timerReducer(state = initialTime, action) {
+  switch (action.type) {
+    case 'setTimer':
+      return action.timer
     default:
       return state
   }
@@ -107,7 +121,8 @@ function taskReducer(state = [], action) {
 const pomoReducer = combineReducers({
   timerRunning: stopTimerReducer,
   tasks: taskReducer,
-  sessionLength: sessionReducer
+  sessionLength: sessionReducer,
+  currentTimer: timerReducer
 })
 
 export default pomoReducer;

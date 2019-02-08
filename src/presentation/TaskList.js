@@ -8,7 +8,11 @@ const drag = (e) => {
   e.dataTransfer.setData("text", e.target.id)
 }
 
-const TaskList = ({tasks, showTask, taskTime, deleteTask, dropList}) => (
+const isCurrentTask = (task, currentTask, timerRunning) => {
+  return task.id === currentTask.id && timerRunning
+}
+
+const TaskList = ({tasks, showTask, taskTime, deleteTask, dropList, currentTask, currentTime, timerRunning}) => (
   <>
     <div className="list-group" id="tasks-list">
       {tasks.map(task => {
@@ -26,7 +30,8 @@ const TaskList = ({tasks, showTask, taskTime, deleteTask, dropList}) => (
               </h5>
               <p className="list-group-item-text" id={`text-${task.id}`}
               onClick={showTask}>
-              {taskTime(task)}</p>
+                {isCurrentTask(task, currentTask, timerRunning) ? `${currentTime.minutes}:${currentTime.seconds}`: taskTime(task)}
+              </p>
               <button onClick={deleteTask} id={task.id}>Delete Task</button>
             </a>
           </div>

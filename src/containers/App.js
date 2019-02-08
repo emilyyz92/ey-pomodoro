@@ -15,7 +15,8 @@ class App extends Component {
     this.state = {
       modal: false,
       task: {},
-      taskTarget: 1
+      taskTarget: 1,
+      currentTask: ''
     }
   }
 
@@ -29,6 +30,14 @@ class App extends Component {
       modal: true,
       task: task
     })
+  }
+
+  componentDidUpdate(prevProps) {
+    if(prevProps.tasks !== this.props.tasks) {
+      this.setState({
+        currentTask: this.currentTask()
+      })
+    }
   }
 
   deleteTask = (e) => {
@@ -131,6 +140,9 @@ class App extends Component {
               taskTime={this.taskTime}
               deleteTask={this.deleteTask}
               dropList={this.dropList}
+              currentTask={this.state.currentTask}
+              currentTime={this.props.currentTimer}
+              timerRunning={this.props.timerRunning}
             />
             <Task task={this.state.task}
               isOpen={this.state.modal}
@@ -153,7 +165,9 @@ class App extends Component {
 const mapStateToProps = (state) => {
   return {
     tasks: state.tasks,
-    sessionLength: state.sessionLength
+    sessionLength: state.sessionLength,
+    currentTimer: state.currentTimer,
+    timerRunning: state.timerRunning
   }
 }
 

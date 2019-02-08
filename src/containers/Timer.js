@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux'
 import Setting from '../presentation/Setting'
 import { setSessionLength, savePause } from '../actions/settingActions'
+import { setTimerToState } from '../actions/timerActions'
 import {Alert} from 'reactstrap'
 import sound from '../bell.mp3'
 
@@ -47,6 +48,17 @@ class Timer extends Component {
 
   componentDidMount() {
     this.connectStateToProp()
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    if(this.props.timerRunning) {
+      if(prevState.minutes !== this.state.minutes || prevState.seconds !== this.state.seconds) {
+        this.props.setTimer({
+          minutes: this.state.minutes,
+          seconds: this.state.seconds
+        })
+      }
+    }
   }
 
   //converts minute number to string
@@ -291,6 +303,7 @@ const mapDispatchToProps = (dispatch) => {
     setSessionLength: (session, minute) => dispatch(
       setSessionLength(session, minute)),
     startTimer: (type) => dispatch({type: type}),
+    setTimer: (timer) => dispatch(setTimerToState(timer)),
     completeTask: (taskID) => dispatch({
       type: 'completeTask',
       taskID: taskID
